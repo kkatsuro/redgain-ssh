@@ -21,7 +21,7 @@ from .rembed import create_reply_embed_from_ref, \
                     fetch_message_from_link, \
                     fetch_message_from_reference
 
-from .webhook import webhook_send, load_webhooks
+from .webhook import webhook_send
 from .letters import mapfont
 from .render_gallery import render_gallery
 
@@ -579,8 +579,10 @@ class fap(Cog):
         file = discord.File(fullpath, filename=filename)
         message = await webhook_send(ctx, ctx.channel, user, file=file)
 
-        # we cache only loadable files
         if file_extension(filename) in self.loadable_extensions:
+            # added logging for debugging purposes - there's a bug where cached file may vanish
+            # maybe it's related to removal of original message
+            logger.info(f'&cat: caching file "{filename}" on "{message.guild.id}-{message.channel.id}-{message.id}"')
             self.cat_cache[filename] = message.attachments[0].url
 
 
