@@ -1,7 +1,7 @@
 {
     "author" : ["me"],
-    "install_msg" : "not sure if i need it so lets just have it",
-    "name" : "redgain-ssh",
-    "short" : "Dont forget your ssh keys lol",
-    "description" : "eh"
+    "install_msg" : "hello there",
+    "name" : "my-based-cogs",
+    "short" : "these are my based cogs",
+    "description" : "based-cogs"
 }

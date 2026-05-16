@@ -1,0 +1,16 @@
+[project]
+name = "mycogs"
+version = "0.1.0"
+description = "This are my cogs"
+readme = "README.md"
+requires-python = ">=3.11, <3.12"
+dependencies = [
+ "Red-DiscordBot>=3.5.24",
+ "pip",
+ "yt-dlp",
+ "humanize",
+ "httpx",
+ "pillow",
+ "numpy",
+ "beautifulsoup4>=4.14.3",
+]

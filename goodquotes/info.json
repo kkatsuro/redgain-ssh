@@ -8,7 +8,8 @@
   "requirements": [
     "httpx",
     "pillow",
-    "numpy"
+    "numpy",
+    "beautifulsoup4"
   ],
   "tags": [
     "utils",
