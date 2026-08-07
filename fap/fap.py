@@ -1,29 +1,26 @@
 import asyncio
 import logging
-import json
-import random
 import os
-import httpx
-
-from PIL import Image, ImageColor
 from io import BytesIO
 from typing import Optional
 
 import discord
-from redbot.core import Config, checks, commands
+import httpx
+from PIL import Image, ImageColor
+from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.commands import Cog
-from redbot.core.utils.chat_formatting import pagify
 
-from .buffer import dprint, buffempty, dsend
-from .rembed import create_reply_embed_from_ref, \
-                    create_reply_embed, \
-                    fetch_message_from_link, \
-                    fetch_message_from_reference
-
-from .webhook import webhook_send
+from .buffer import dprint, dsend
 from .letters import mapfont
+from .rembed import (
+    create_reply_embed,
+    create_reply_embed_from_ref,
+    fetch_message_from_link,
+    fetch_message_from_reference,
+)
 from .render_gallery import render_gallery
+from .webhook import webhook_send
 
 logger = logging.getLogger("red")
 
@@ -60,12 +57,10 @@ async def _check_channel_permissions(ctx, channel: discord.TextChannel):
 
     return True
 
-
 # @todo: this will have to be linked to guild somehow..
 DISGUST = '<:kurumDisgust:973260944593530991>'
 STARE = '<:kurumStare:973260945260433408>'
 WOW = '<:kurumWow:973260945667268700>'
-KAZ_SALUT = '<:kazSalut:936613010062049360>'
 
 class fap(Cog):
     """
@@ -98,35 +93,11 @@ class fap(Cog):
         self.cat_cache = {}
         self.loadable_extensions = set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4'])
 
-
     # XXX: some checks here?
     async def _fetch_message(self, guildid, channelid, messageid):
         guild = self.bot.get_guild(int(guildid))
         channel = guild.get_channel(int(channelid))
         return await channel.fetch_message(int(messageid))
-
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        try:
-            if message.author.bot:  # @todo: change to check if self ?
-                return
-
-            # insult a user; @todo: later do it only if some setting is up
-            mentions = message.mentions
-            if len(mentions) == 1 and mentions[0].id == self.bot.user.id:
-                await self.insult_user(message.channel)
-        except Exception as e:
-            await message.channel.send(f'FUCKING SHIT REEEE: {e}')
-
-    async def insult_user(self, channel, user=None):
-        async with httpx.AsyncClient() as client:
-            response = await client.get('https://evilinsult.com/generate_insult.php')
-
-        if user != None:
-            await channel.send(f'{user.mention} {response.text}')
-        else:
-            await channel.send(response.text)
-        await channel.send(DISGUST)
 
     @commands.admin()
     @commands.group(name='d')
@@ -160,7 +131,6 @@ class fap(Cog):
 
             await dsend(ctx.channel)
 
-
     @dev.command(name='listhooks')
     async def fap_listhooks(self, ctx):
         webhooks = await ctx.channel.webhooks()
@@ -174,16 +144,6 @@ class fap(Cog):
 
         await dsend(ctx.channel)
 
-
-    @dev.command(name='thing')
-    async def fap_thing(self, ctx):
-        """
-        does the thing
-        I always used it as a testing command..
-        """
-        pass
-
-
     ## low effort useless commands
     #
     @commands.guild_only()
@@ -193,7 +153,6 @@ class fap(Cog):
         user = ctx.message.author
         await ctx.send(user)
 
-
     @commands.guild_only()
     @commands.command(name='addfav')
     async def fap_addfav(self, ctx):
@@ -201,30 +160,22 @@ class fap(Cog):
         user = ctx.message.author
         await ctx.send(f'{user.mention} added it to his favorites!')
 
-
     @commands.command(name='crazy')
     async def fap_crazy(self, ctx, how_much_crazy: Optional[int] = 10):
         """I was crazy once"""
-        
+
         crazy = """𝘪 𝘸𝘢𝘴 𝘤𝘳𝘢𝘻𝘺 𝘰𝘯𝘤𝘦
         𝘵𝘩𝘦𝘺 𝘭𝘰𝘤𝘬𝘦𝘥 𝘮𝘦 𝘪𝘯 𝘢 𝘳𝘰𝘰𝘮
         𝘢 𝘳𝘶𝘣𝘣𝘦𝘳 𝘳𝘰𝘰𝘮
         𝘢 𝘳𝘶𝘣𝘣𝘦𝘳 𝘳𝘰𝘰𝘮 𝘸𝘪𝘵𝘩 𝘳𝘢𝘵𝘴
         𝘢𝘯𝘥 𝘵𝘩𝘦𝘺 𝘮𝘢𝘥𝘦 𝘮𝘦 𝘤𝘳𝘢𝘻𝘺
         𝘤𝘳𝘢𝘻𝘺 ?""".splitlines()
-      
+
         await ctx.send('𝘤𝘳𝘢𝘻𝘺 ?')
         for _ in range(how_much_crazy):
             for line in crazy:
                 await asyncio.sleep(1)
                 await ctx.send(line)
-
-
-    @commands.command(name='insult')
-    async def fap_insult(self, ctx, user: discord.Member):
-        """Insult a user <:kekwPatkekw:1107697748964298872>"""
-        await self.insult_user(ctx.channel, user)
-
 
     ## somewhat useful commands
     #
@@ -242,7 +193,6 @@ class fap(Cog):
         img.save(imgbytes, format="PNG")
         imgbytes.seek(0)
         await ctx.send(file = discord.File(imgbytes, filename='image.png'))
-
 
     # @todo: maybe move it to a separate cog
     def _todo_usage_message(self, message):
@@ -265,9 +215,8 @@ class fap(Cog):
         if found_length == 0:              # another reason why buffer should have code in print
             await channel.send('empty ' + WOW) #
 
-
     # @todo: maybe embed output of this
-    # @todo: maybe remove add argument, automatically add all arguments when no known argument 
+    # @todo: maybe remove add argument, automatically add all arguments when no known argument
     @commands.command(name='todo')
     async def fap_todo(self, ctx, *, args = None):
         '''
@@ -317,7 +266,7 @@ class fap(Cog):
                         return
                     return await self._list_todos(todo_file_content, ctx.channel)
                 indexes.append(index)
-            
+
             removed_todos = [ todo_file_content.pop(i) for i in sorted(indexes, reverse=True) ]
 
             with open(todo_file, 'w') as f:
@@ -332,9 +281,8 @@ class fap(Cog):
 
         await ctx.send(self._todo_usage_message(f'there is no *{args[0]}* option'))
 
-
     # TODO: reply to multiple commands
-    # &reply [link] [+5]/[-5] 
+    # &reply [link] [+5]/[-5]
     # &reply [link] [link] - range?
     @commands.command(name='reply')
     async def fap_reply(self, ctx, author_in_title: Optional[bool] = True, link=None):
@@ -396,7 +344,6 @@ class fap(Cog):
         await ctx.channel.send(embed=embed)
         return
 
-
     # @todo: message attachments
     @commands.command(name='say')
     async def fap_say(self, ctx, channel: Optional[discord.TextChannel] = None, *, text):
@@ -405,7 +352,7 @@ class fap(Cog):
         # @todo:
         # * don't show this in logs
         # * this doens't work if in dm's..
-        asyncio.create_task(ctx.message.delete())  
+        asyncio.create_task(ctx.message.delete())
 
         channel = channel or ctx.channel
         channel_permission_check = await _check_channel_permissions(ctx, channel)
@@ -419,7 +366,6 @@ class fap(Cog):
             await self._user_reply_to(ctx, channel, user, ref)
 
         await channel.send(text)
-
 
     async def _download_file_from_link(self, link, channel):
         try:
@@ -460,17 +406,14 @@ class fap(Cog):
         else:
             return await channel.send(f"Unsupported content-type: {content_type}; we don't know how to behave here yet")
 
-
     def _rerender_gallery(self):
         render_gallery(self.reddata, f'{self.fap_files}/reddata_gallery.png', fontpath=self.fap_location + '/Iosevka-Medium.ttc')
-
 
     @commands.guild_only()
     @commands.command(name='rerender')
     async def fap_rerender(self, ctx):
         self._rerender_gallery()
         await ctx.send(file=discord.File(self.fap_files + '/reddata_gallery.png'))
-
 
     @commands.guild_only()
     @commands.command(name='cat_upload')
@@ -491,7 +434,7 @@ class fap(Cog):
 
         for file in ctx.message.attachments:
             filename = file.filename
-            
+
             if '/' in filename:
                 await ctx.send(
                     "I don't know how you did this but you're not allowed to do this ('/' in the filename)"
@@ -508,14 +451,12 @@ class fap(Cog):
 
         await ctx.send('done uploading!')
         self._rerender_gallery()
-        
 
     # XXX: there is only one cache now, and it works bc in discord you can
     # actually leak your attachments,
     # but we might want to make  'server: channel: url'  cache
     def cat_cache_get(self, filename):
         return self.cat_cache.get(filename)
-
 
     # TODO: better reddata directory handling
     # TODO: add rm and add file commands (and change name probably)
@@ -543,7 +484,6 @@ class fap(Cog):
             file = discord.File(self.fap_location + '/400-pound-hacker.jpg',
                                 filename='400-pound-hacker.jpg')
             return await ctx.send(f'found your picture {user.mention}', file=file)
-            
 
         fullpath = self.reddata + '/' + filename
 
@@ -585,7 +525,6 @@ class fap(Cog):
             logger.info(f'&cat: caching file "{filename}" on "{message.guild.id}-{message.channel.id}-{message.id}"')
             self.cat_cache[filename] = message.attachments[0].url
 
-
     # TODO: prevent removed messages from appearing in logs
     @commands.guild_only()
     @commands.command(name='frame')
@@ -623,93 +562,6 @@ class fap(Cog):
             message = f'nice try {member.mention}'
             await webhook_send(ctx, channel, my_account, message=message)
 
-
-    ## weeb commands
-    @commands.command(name='waifu')
-    async def fap_waifu(self, ctx, how_many_waifus: Optional[int] = 1,
-                        category: Optional[str] = 'waifu'):
-        '''
-        random waifu for you <:kurumBlush:973260944270577674>
-
-        use &waifu list to list categories
-        '''
-
-        categories = [ 'waifu', 'neko', 'shinobu', 'megumin', 'bully', 'cuddle',
-                       'cry', 'hug', 'awoo', 'kiss', 'lick', 'pat', 'smug',
-                       'bonk', 'yeet', 'blush', 'smile', 'wave', 'highfive',
-                       'handhold', 'nom', 'bite', 'glomp', 'slap', 'kill',
-                       'kick', 'happy', 'wink', 'poke', 'dance', 'cringe' ]
-
-        category = category.lower()
-        if category == 'list':
-            for category in categories:
-                dprint(category)
-            await dsend(ctx.channel)
-            return
-
-        if category not in categories:
-            await ctx.send('unknown category, please use &waifu list')
-            return
-
-        if how_many_waifus == 0:
-            await ctx.send('sent 0 waifus!')
-            return
-
-        if how_many_waifus < 0:
-            await ctx.send(f'deleting {-1*how_many_waifus} random waifus...')
-            await asyncio.sleep(1)
-            await ctx.send(f'done!')
-            return
-
-        if how_many_waifus > 50:
-            await ctx.send("<:monkaMEGA:1026971851118878811>")
-            await asyncio.sleep(1)
-            await ctx.send("are you sick or something?")
-            await asyncio.sleep(2)
-            await ctx.send("I'm afraid discord servers won't endure "\
-                           "this enormous horde of waifus")
-            await asyncio.sleep(4)
-            await ctx.send('...')
-            await asyncio.sleep(1)
-            await ctx.send('welp')
-            await asyncio.sleep(1)
-            await ctx.send('whatever')
-            await asyncio.sleep(1)
-            await ctx.send('gotta do your job')
-            await asyncio.sleep(1)
-            await ctx.send(f'sending {how_many_waifus} waifus to abyss...')
-
-            wait_time = 3443 if how_many_waifus > 3442 else how_many_waifus
-            await asyncio.sleep(wait_time)
-            await ctx.send('done!')
-            return
-
-        if how_many_waifus > 5:
-            await ctx.send("I'm really sorry but we can send only five waifus at once")
-            how_many_waifus = 5
-
-
-        for waifu in range(how_many_waifus):
-            try:
-                async with httpx.AsyncClient() as client:
-                    waifu_json_object = await client.get('https://api.waifu.pics/sfw/' + category)
-
-                waifu_url = json.loads(waifu_json_object.content.decode())['url']
-            except Exception as e:
-                dprint('error while trying to load waifu:')
-                dprint(f'`{e}`')
-                await dsend(ctx.channel)
-                return
-
-            # won't ever happen but that's probably what we should do since
-            # sending empty str causes error, right?
-            if waifu_url == '':
-                await ctx.send('waifu turned out to be empty <:kurumWow:973260945667268700>')
-                return
-
-            await ctx.send(waifu_url)
-
-
     @commands.command(name='letters')
     async def fap_letters(self, ctx, *, text: str):
         """return text in different fonts"""
@@ -719,11 +571,6 @@ class fap(Cog):
 
         await dsend(ctx.channel)
 
-
     async def _user_reply_to(self, ctx, channel, user, ref, author_in_title=True):
         embed = await create_reply_embed_from_ref(ctx.channel, ref, author_in_title)
         await webhook_send(ctx, channel, user, embed=embed)
-
-    # def cog_unload(self):
-    #     self.bot.loop.create_task(self.session.close())
-
